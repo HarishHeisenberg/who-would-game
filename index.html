@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="color-scheme" content="light only">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Who Would?! – Party Game</title>
+<link href="https://fonts.googleapis.com/css2?family=Bowlby+One&family=Rubik:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{color-scheme:light;--bg:#ee3b24;--card:#ffc72c;--ink:#111;--paper:#fff7e6;--pur:#6b2bd9;--pink:#ff8fb8;--grn:#38d86b;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box}html,body{height:100%;margin:0}
+body{background:var(--bg);font-family:'Rubik',system-ui,sans-serif;font-weight:500;color:#111;display:flex;justify-content:center}
+#app{width:100%;max-width:440px;min-height:100%;padding:18px;display:flex;flex-direction:column;gap:14px}
+.top{display:flex;justify-content:space-between;align-items:center;background:var(--paper);color:var(--ink);border:3px solid #111;border-radius:16px;padding:8px 14px;box-shadow:0 4px 0 #111}
+.logo{font-family:'Bowlby One',Impact,sans-serif;font-size:20px}.pill{background:#111;color:#fff;border-radius:99px;padding:4px 12px;font-size:13px;letter-spacing:2px}
+.panel{background:var(--card);border:3px solid #111;border-radius:26px;padding:20px;box-shadow:0 6px 0 #111;display:flex;flex-direction:column;gap:14px;color:#111}
+h1,h2{font-family:'Bowlby One',Impact,sans-serif;margin:0;line-height:1.1;text-transform:uppercase}h1{font-size:30px}h2{font-size:22px}
+p{margin:0}.sm{font-size:13px;opacity:.8}
+button{font:inherit;font-family:'Bowlby One',Impact,sans-serif;font-size:17px;text-transform:uppercase;border:3px solid #111;border-radius:16px;padding:14px;background:var(--pur);color:#fff;box-shadow:0 5px 0 #111;cursor:pointer;transition:transform .08s}
+button:active{transform:translateY(4px);box-shadow:0 1px 0 #111}button.alt{background:var(--paper);color:#111}button.go{background:var(--grn);color:#111}button:disabled{opacity:.45}
+input{font:inherit;font-size:20px;border:3px solid #111;border-radius:14px;padding:12px;background:var(--paper);color:#111;width:100%;text-transform:none}
+input.code{text-align:center;letter-spacing:8px;text-transform:uppercase;font-family:'Bowlby One',sans-serif;font-size:28px}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.em{font-size:28px;background:var(--paper);border:3px solid #111;border-radius:14px;padding:6px 0;box-shadow:none;font-family:inherit;text-transform:none}.em.sel{background:var(--pur);transform:scale(1.08)}
+.opts{display:grid;grid-template-columns:1fr 1fr;grid-auto-rows:1fr;gap:10px}.opt{display:flex;flex-direction:column;align-items:center;gap:4px;background:var(--paper);color:#111;font-size:14px;padding:12px 6px}.opt{min-width:0;width:100%;min-height:96px;justify-content:center}.opt span{font-size:38px}.nm{font-style:normal;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px}
+.q{background:var(--paper);border:3px solid #111;border-radius:20px;padding:18px;font-size:21px;line-height:1.3;color:#111;font-weight:700;transform:rotate(-1deg)}
+.tag{display:inline-block;background:#111;color:#fff;border-radius:8px;padding:3px 10px;font-size:12px;letter-spacing:1px;width:max-content}
+.row{display:flex;align-items:center;gap:10px;background:var(--paper);border:3px solid #111;border-radius:14px;padding:8px 12px}.row b{flex:1}.row .big{font-size:26px}
+.win{background:var(--pink)}.badge{font-family:'Bowlby One',sans-serif;background:#111;color:#fff;border-radius:99px;padding:2px 10px}
+.big0{font-size:64px;text-align:center}.center{text-align:center}.err{background:#111;color:#fff;border-radius:12px;padding:10px;font-size:14px}
+.pick{display:flex;align-items:center;justify-content:center;gap:14px;background:var(--paper);border:3px solid #111;border-radius:18px;padding:14px;box-shadow:0 4px 0 #111;font-family:'Bowlby One',Impact,sans-serif;font-size:26px;text-transform:uppercase;word-break:break-word;text-align:center}.pick span{font-size:46px}
+</style>
+</head>
+<body><div id="app"></div>
+<script>
+// ---------- question bank (hand-written). To add questions, just add lines to these lists ----------
+const Q={
+family:[
+  "Who would hide in the bathroom to avoid doing the dishes?",
+  "Most likely to say \"I'm not hungry\" and then eat everyone's food?",
+  "Who would argue with a delivery guy about the address for 20 minutes?",
+  "Who would forget where they parked and blame the car?",
+  "Who would pretend to be sick to skip a family function?",
+  "Most likely to take 200 photos and post none?",
+  "Who would shout at the TV during a cricket match?",
+  "Who would hide the last piece of cake for themselves?",
+  "Most likely to ask \"what's for dinner?\" right after finishing lunch?",
+  "Most likely to fall asleep with the TV on and wake up scared?",
+  "Who would take a selfie at the worst possible moment?",
+  "Who would accidentally call the teacher \"Amma\"?",
+  "Most likely to dance so hard at a relative's wedding that their clothes tear?",
+  "Who would hold the whole family back for one more photo?",
+  "Who would take 3 hours to get ready and still be late?",
+  "Who would say \"five minutes\" and take an hour?",
+  "Who would swear they did not eat the sweets with chocolate on their face?",
+  "Who would argue about the AC temperature every night?",
+  "Most likely to ask the waiter for a discount?",
+  "Who would try to bargain at a mall with fixed prices?",
+  "Who would pack a whole suitcase for a two-day trip?",
+  "Who would forget the one thing they went to the shop to buy?",
+  "Who would sing in the shower so loudly that the neighbours complain?",
+  "Who would eat a whole plate of snacks and say they're \"just tasting\"?",
+  "Who would bring home a stray animal without telling anyone?",
+  "Most likely to tell the same story at every family dinner?",
+  "Who would fall asleep on the sofa mid-sentence?",
+  "Who would wear mismatched slippers to a wedding?",
+  "Who would send a family message to the wrong group?",
+  "Who would forward every good-morning message to everyone?",
+  "Who would sleep through a fire alarm?",
+  "If the family went on a reality show, who would win?",
+  "If the family got lost in a jungle, who would panic first?",
+  "If the family got stuck in a lift, who would start singing?",
+  "If we were in a horror movie, who would be caught first doing something silly?",
+  "Who would hide in a cupboard during hide and seek and fall asleep?",
+  "Who would tell the neighbours all the family secrets?",
+  "Who would forget their own phone number?",
+  "Who would eat the most at a wedding buffet and take food home in a box?",
+  "Who would talk loudly on the phone in a quiet place?",
+  "Who would try to cook and set off the smoke alarm?",
+  "Who would add sugar instead of salt and serve it proudly?",
+  "Who would dance at a wedding as if nobody was watching, while everybody was?",
+  "Who would laugh at their own joke so hard that nobody else does?",
+  "Who would nap in the cinema and snore through the best scene?",
+  "Who would wear their shirt inside out all day without noticing?",
+  "Who would blame the cat for something they broke?",
+  "Who would talk to themselves in the mirror every morning?",
+  "Who would sneak midnight snacks and think no one can hear?",
+  "Who would pretend to understand new technology but know nothing?",
+  "Who would take selfies at every tourist spot, including a garbage truck?",
+  "Who would give unwanted advice to a stranger at the supermarket?",
+  "Who would turn a simple trip to the shop into a three-hour adventure?",
+  "Who would argue about who gets the front seat for every ride?",
+  "Who would sit on the remote and then blame it for going missing?",
+  "Who would forget their own birthday?",
+  "Who would bring a ten-person gift to a two-person party?",
+  "Who would refuse to dance when asked and then not stop dancing?",
+  "Who would hug a stranger by mistake at a wedding?",
+  "Who would take 20 minutes to pick a movie and fall asleep in five?",
+  "Who would eat a chilli by mistake and refuse to admit it's hot?",
+  "Who would tell the longest story to answer a yes-or-no question?",
+  "Who would forget the lyrics but sing louder?",
+  "If the family opened a restaurant, who would eat all the profit?",
+  "If the family had a band, who would think they're the lead singer?",
+  "If we got locked in a shop overnight, who would eat everything?",
+  "If we won the lottery, who would spend it first?",
+  "If we all became ghosts, who would be the funniest at scaring people?",
+  "If the family were a superhero team, who would always be asleep?",
+  "If we were stranded on an island, who would hug a coconut and call it a friend?",
+  "Who would try to bribe a kid with chocolate and get cheated?",
+  "Who would cry the loudest at a farewell?",
+  "Who would steal the family photo by making silly faces?",
+  "Who would be late to their own wedding?",
+  "Who would hold up the queue because they forgot their wallet?",
+  "Who would be scared of their own shadow in the dark?",
+  "Who would sleep on the train and miss their station?",
+  "Who would pick up the wrong bag at the airport and wear someone else's clothes?",
+  "Who would accidentally call the grandchild by the wrong name?",
+  "Who would shout \"Surprise!\" at the wrong house?",
+  "Who would use the phone flashlight to look for the phone?",
+  "Who would try to look busy when the boss walks by and fall off the chair?",
+  "Who would swear they saw a ghost and then discover it was a towel?",
+  "Who would spend an hour searching for the glasses on their head?",
+  "Who would burn water if given the chance to cook?",
+  "Who would get a prank call and believe every word?",
+  "Who would hide chocolates in a \"secret\" place that everyone knows?",
+  "Who would complain about the food and eat three servings?",
+  "Who would wake up the whole house to look for one missing sock?",
+  "Who would nap in a meeting and be called to answer?",
+  "Who would clap at the wrong time during a performance?",
+  "Who would borrow a charger and never return it for six years?",
+  "Who would pull a door marked \"push\" for ten minutes?",
+  "Who would dance with a broom and call it practice?",
+  "Who would feed all the cats on the street?",
+  "Who would argue with the weather forecast?",
+  "Who would insist on taking the longest route to \"save time\"?",
+  "Who would burn the rice and call it \"crispy style\"?",
+  "Who would cry while cutting onions and blame everyone around?",
+  "Who would be the most scared of a tiny lizard?",
+  "Who would run from a bee and hit three people?",
+  "Who would take a pet to a function and let it eat the cake?",
+  "Who would try to fix the TV by hitting it?",
+  "Who would start a fight over the last piece of pizza?",
+  "Who would tell a secret to someone who tells everyone?",
+  "Who would pretend to like a gift and sell it later?",
+  "Who would give a thumbs up in a video call and forget to unmute?",
+  "Who would hide under a table during a thunderstorm?",
+  "Who would get a sunburn through a window?",
+  "Who would fall off a chair while trying to look cool?",
+  "Who would borrow a book and return it with a coffee stain?",
+  "Who would eat dessert first at every meal?",
+  "Who would sing the national anthem the wrong way?",
+  "Who would take a ten-minute shower and use all the hot water?",
+  "Who would watch the same movie five times and cry at the same scene?",
+  "Who would accidentally join a protest by walking in the wrong direction?",
+  "Who would try to speak English to a pigeon?",
+  "Who would keep a plant alive for only two days?",
+  "Who would get lost in a supermarket and ask the manager for help?",
+  "Who would sneeze at the most silent moment of a prayer?",
+  "Who would try a handstand at a party and get stuck?",
+  "Who would answer the wrong phone and chat for an hour?",
+  "Who would ask \"is this vegetarian?\" after eating the whole thing?",
+  "Who would bring the most embarrassing childhood photo to a wedding?",
+  "Who would call everyone \"dude\", including the elders?",
+  "Who would start a dance-off at a quiet family dinner?",
+  "Who would forget their umbrella on the only rainy day?",
+  "Who would stay up all night to watch a match and sleep through the final?",
+  "Who would try to catch a mosquito and slap themselves?",
+  "Who would make a speech at a birthday and cry?",
+  "Who would get a bad haircut and call it the new trend?",
+  "Who would insist they know the route and take everyone in circles?",
+  "Who would win a staring contest against a cat?",
+  "Who would be the last to leave the dining table every time?",
+  "Who would try to make a viral video and break a vase?",
+  "Who would hide vegetables in their pocket to avoid eating them?",
+  "Who would pretend to be a statue and scare a friend?",
+  "Who would wear a costume to a party that isn't a costume party?",
+  "Who would sleep in the car and wake up in a different city?",
+  "Who would try to repair something and make it worse?",
+  "Who would reply \"ok\" to a 20-paragraph message?",
+  "Who would carry five bags to avoid making two trips?",
+  "Who would spill tea on the most expensive carpet?",
+  "Who would sit on the cake by mistake?",
+  "Who would laugh at the wrong moment in a serious movie?",
+  "Who would say \"just one more episode\" and watch the whole season?",
+  "Who would use all the toilet paper and say nothing?",
+  "Who would say they're on a diet and then order extra cheese?",
+  "Who would get stuck in a revolving door?",
+  "Who would claim to be an expert after watching one video?",
+  "Who would talk politely to the GPS?",
+  "Who would keep every plastic bag in the house?",
+  "Who would forget the wedding gift in the car?",
+  "Who would send \"good morning\" at 3 AM?",
+  "Who would run for a bus and miss it by one second every time?",
+  "Who would think a mannequin is a person and say hello?",
+  "Who would take the longest to say goodbye at the door?",
+  "Who would drop their phone in the toilet at least twice a year?",
+  "Who would bring spicy food to a baby's party?",
+  "Who would give the funniest wrong answer in a quiz?",
+  "Who would hide when guests arrive and reappear when the food does?",
+  "Who would cry because their ice cream fell, even as an adult?",
+  "Who would pretend to know all the answers in a family quiz?",
+  "Who would get tongue-tied while introducing their own family?",
+  "Who would ask the same question five times in one day?",
+  "Who would put the keys in the fridge?",
+  "Who would call a plumber for a tiny leak and flood the house?",
+  "Who would wear their kurta backwards to a function?",
+  "Who would play loud music at midnight and think it's fine?",
+  "Who would turn every family trip into a photo shoot?",
+  "Who would have the most \"mysterious\" expense every month?",
+  "Who would say \"I'm fine\" and then sulk for three hours?",
+  "Who would leave the family group and rejoin five minutes later?",
+  "Who would confuse their cousin with the neighbour?",
+  "Who would be asked to cut the cake and cut the plate?",
+  "Who would try to scare the family and get scared themselves?",
+  "Who would make a perfect tea and burn the kitchen?",
+  "Who would clap when the food arrives at the table?",
+  "Who would be the best at gossip and never get caught?",
+  "Who would take the blame for a broken vase to protect the pet?",
+  "Who would have the funniest reaction to a scary movie?",
+  "Who would fall asleep first at a family game night and lose the game?",
+  "Who would bargain with a vegetable vendor for a free bunch of coriander?",
+  "Who would argue with the auto driver over ₹10 and walk five kilometres?",
+  "Who would carry biryani to a family function and eat half of it on the way?",
+  "Who would fight over the last piece of chicken in the biryani pot?",
+  "Who would forward a \"Good Morning\" image to 50 groups before 6 AM?",
+  "Who would keep every Amazon box \"for later\"?",
+  "Who would store 100 steel containers and never find the right lid?",
+  "Who would hide the sweets from guests in the top cupboard?",
+  "Who would wake up the whole house at 4 AM on the first day of a festival?",
+  "Who would say \"I won't eat\" and finish the whole plate of murukku?",
+  "Who would try to fix the pressure cooker and cause a whistle explosion?",
+  "Who would say \"we'll see\" about a wedding and mean \"no\"?",
+  "Who would introduce every guest as \"my best friend\" in front of relatives?",
+  "Who would ask \"did you eat?\" every ten minutes?",
+  "Who would call the plumber, the electrician and the neighbour for one leaking tap?",
+  "Who would lose their slippers at a function and go home with two different pairs?",
+  "Who would carry an umbrella on a sunny day and none in the rain?",
+  "Who would send \"Reached safely\" to the family group after every trip?",
+  "Who would check tomato prices in five shops and buy from the first?",
+  "Who would join a long queue just because others are standing in it?",
+  "Who would check the auto meter like a detective?",
+  "Who would cheer for both teams in a cricket match?",
+  "Who would fall asleep during a serial and still know the whole story?",
+  "Who would give relationship advice to a total stranger at a wedding?",
+  "Who would ask \"how much do you earn?\" within five minutes of meeting someone?",
+  "Who would ask \"when is the marriage?\" at every family function?",
+  "Who would say \"yes\" to a wedding invitation for the whole street?",
+  "Who would try to speak English at a roadside tea shop?",
+  "Who would drink hot tea in the summer and complain about the heat?",
+  "Who would carry homemade snacks in a suitcase and find them crushed under the clothes?",
+  "Who would keep old newspapers for \"future use\"?",
+  "Who would stop the family trip to buy filter coffee?",
+  "Who would get lost at the bus stand and call the whole family?",
+  "Who would reserve a train seat and still argue with whoever is sitting there?",
+  "Who would hold a bus seat with a handkerchief and a bag?",
+  "Who would fall asleep in a long movie and still know the ending?",
+  "Who would argue over the TV remote like it's a national treasure?",
+  "Who would tell the neighbours the wrong version of the story?",
+  "Who would add extra salt to the sambar and call it \"the new recipe\"?",
+  "Who would put curd on everything, including the cake?",
+  "Who would argue with the milkman about the water in the milk?",
+  "Who would eat dosa with a fork and get stared at by the whole restaurant?",
+  "Who would argue about how much sugar goes in the tea?",
+  "Who would ask the ice cream man for a free sample three times?",
+  "Who would shop for onions as if they're buying gold?",
+  "Who would show 200 trip photos to a guest who didn't ask?",
+  "Who would say \"it's only 5 minutes by walk\" and walk for an hour?",
+  "Who would drive around for 30 minutes to avoid paying for parking?",
+  "Who would fall for a \"Congratulations, you won a prize!\" call?",
+  "Who would forward every health tip from WhatsApp to the whole family?",
+  "Who would argue about dosa vs idli like it's a court case?",
+  "Who would call the cable operator for a three-minute channel glitch?",
+  "Who would wear a sweater in 35-degree weather because it's the \"winter month\"?",
+  "Who would oil their hair and leave marks on every wall?",
+  "Who would ask for a discount at a mall with fixed prices?",
+  "Who would fall asleep at a wedding reception with a plate still in hand?",
+  "Who would take a group photo and ask everyone to \"smile\" for 20 minutes?",
+  "Who would be the first to ask \"which side are you from?\" at a wedding?",
+  "Who would take the biggest piece from the sweet box and say \"one is enough\"?",
+  "Who would try a YouTube recipe and make the whole house smell?",
+  "Who would answer the door in a lungi?",
+  "Who would complain that the food is too spicy and ask for more pickle?",
+  "Who would shout \"Amma!\" in a crowd and make everyone turn?",
+  "Who would call leftover idlis \"tomorrow's breakfast\" for a whole week?",
+  "Who would take the longest to choose a saree?",
+  "Who would send the family group a 12-minute video message?",
+  "Who would keep free hotel soaps and shampoos from every trip?",
+  "Who would ask \"is the mic on?\" while speaking at a wedding?",
+  "Who would try to beat the traffic by going in the wrong lane and meet a bus?",
+  "Who would keep a \"guest cup set\" that no guest has ever used?",
+  "Who would call the family doctor for a sneeze?",
+  "Who would hold up a family trip because they forgot the pickle jar?",
+  "Who would ask for directions at every junction on a road trip?",
+  "Who would argue with the auto driver in three languages?",
+  "Who would hide in the kitchen to escape cousin questions at a wedding?",
+  "Who would buy the whole product line after one free sample?",
+  "Who would take the last parotta, say \"I'll share\", and eat it all?",
+  "Who would take out the \"good plates\" for guests and wash them twice?",
+  "Who would pack lunch for a one-hour trip as if it were a month?",
+  "Who would stand in the ATM queue and start giving everyone advice?",
+  "Who would talk to the CCTV camera in the building?",
+  "Who would give free advice to the players watching cricket on TV?",
+  "Who would sing loudly with headphones on during a bus trip?",
+  "Who would say \"back in my day\" before dinner is even served?",
+  "Who would pretend not to hear the question \"who broke it?\"",
+  "Who would spend more on petrol hunting for a \"cheaper\" restaurant?",
+  "Who would sing like a playback singer during a bucket bath?",
+  "Who would wear a \"party shirt\" two sizes too big?",
+  "Who would clap at the end of a movie in the cinema hall?",
+  "Who would pretend to know cricket and get asked \"who is the captain?\""
+],
+friends:[
+  "Most likely to shout the wrong person's name during sex?",
+  "Most likely to have a naked picture of themselves somewhere on the internet?",
+  "Who is most likely to get caught having sex in a public place?",
+  "Most likely to have a secret sexual fetish nobody knows about?",
+  "Who has probably had the most embarrassing walk of shame?",
+  "Who would have the kinkiest OnlyFans account?",
+  "Most likely to perform sexual acts for money?",
+  "Who is most likely to be secretly into bondage?",
+  "Most likely to steal someone's underwear just for fun?",
+  "Most likely to flirt with their friend's boyfriend or girlfriend?",
+  "Who is most likely to have a secret sugar daddy or sugar mommy?",
+  "Who would be the worst person to hire for a phone sex job?",
+  "Who is most likely to suggest having a threesome?",
+  "Most likely to lie about how many people they've slept with?",
+  "Who is most likely to have a secret child nobody knows about?",
+  "Most likely to accidentally send a nude photo to their family group chat?",
+  "Who is most likely to sleep with their boss to get a promotion?",
+  "Who has probably seen the most people in this room naked?",
+  "Most likely to secretly try a swinging lifestyle?",
+  "Who is most likely to have a secret sex tape?",
+  "Most likely to send a dirty text while sitting in a serious work meeting?",
+  "Who is most likely to still fantasize about an ex?",
+  "Who is most likely to be secretly into BDSM?",
+  "Who is most likely to hide an important sexual health detail from a new partner?",
+  "Most likely to have sex in a party bathroom?",
+  "Who is most likely to pay someone for sex?",
+  "Who is most likely to sleep with someone on the very first date?",
+  "Who would be the most corrupt police officer in this group?",
+  "Most likely to create a fake dating profile just to fool people?",
+  "Who would get banned from Tinder for sending inappropriate messages?",
+  "Who would make the best stripper in this group?",
+  "Most likely to have sex in a parked car?",
+  "Who would enjoy being in a relationship with multiple partners?",
+  "Most likely to fake an orgasm just to finish things quickly?",
+  "Who is most likely to hook up with their ex's brother or sister?",
+  "Who secretly enjoys being dominated in the bedroom?",
+  "Who is most likely to have the biggest porn collection?",
+  "Most likely to have a one-night stand and forget the person's name the next morning?",
+  "Who is most likely to text their ex at 2 AM after getting drunk?",
+  "Who would be the most excited to visit a strip club?",
+  "Most likely to accidentally send a dirty message to the wrong WhatsApp group?",
+  "Who is most likely to get kicked out of a sex shop?",
+  "Who would date someone purely because they are rich?",
+  "Who is most likely to have the weirdest secret bedroom fantasy?",
+  "Who is most likely to have a secret second Instagram account for flirting?",
+  "Who would get caught stalking their ex's new partner on social media?",
+  "Most likely to have kissed two people from this group?",
+  "Who is most likely to have a secret relationship with a married person?",
+  "Who would accidentally reveal their entire dating history after a few drinks?",
+  "Most likely to have a crush on their friend's parent?",
+  "Who is most likely to have sent a dirty voice message and immediately regretted it?",
+  "Who would be the first person to agree to a blind date with a complete stranger?",
+  "Most likely to have a secret affair with a colleague?",
+  "Who is most likely to get caught making out at a family function?",
+  "Who would lie to their partner about where they spent the previous night?",
+  "Most likely to have a crush on someone sitting in this room right now?",
+  "Who is most likely to have kissed someone just to make another person jealous?",
+  "Who would accidentally like their ex's five-year-old Instagram photo while stalking them?",
+  "Most likely to have two relationships going on at the same time?",
+  "Who would be the first to fall for someone they met on a dating app?",
+  "Who is most likely to have a secret collection of intimate photos?",
+  "Most likely to make out with a stranger at a nightclub?",
+  "Who would get caught lying about being single?",
+  "Who is most likely to have a crush on their friend's partner but never admit it?",
+  "Who would be willing to kiss someone in this room for ₹10,000?",
+  "Most likely to have a secret dating app installed while being in a relationship?",
+  "Who would accidentally expose their search history on a big screen?",
+  "Who is most likely to have hooked up with someone and then pretended not to know them in public?",
+  "Most likely to have a secret relationship with someone twice their age?",
+  "Who would be the first to fall in love with their one-night stand?",
+  "Who is most likely to have a crush on their best friend's sibling?",
+  "Most likely to have lied about being at home when they were actually on a date?",
+  "Who would be the most dangerous person to leave alone with their ex?",
+  "Who is most likely to have kissed someone and immediately regretted it?",
+  "Most likely to have a secret affair with someone from their gym?",
+  "Who would be caught sending flirty messages to three different people at the same time?",
+  "Who is most likely to have a secret crush on their boss?",
+  "Most likely to get married after knowing someone for just one week?",
+  "Who would agree to a kiss just to win a stupid bet?",
+  "Who is most likely to have a backup boyfriend or girlfriend just in case their current relationship fails?",
+  "Most likely to accidentally call their current partner by their ex's name?",
+  "Who would be the first to cheat in a long-distance relationship?",
+  "Who is most likely to have a secret affair with their neighbour?",
+  "Most likely to have kissed someone in this room and kept it a secret?",
+  "Who would sell their partner's embarrassing secrets for free drinks?",
+  "Who is most likely to have a crush on two people at the same time?",
+  "Most likely to get caught sneaking someone into their house at midnight?",
+  "Who would send a risky selfie and then immediately switch their phone to airplane mode?",
+  "Who is most likely to have a secret relationship that their entire friend circle already knows about?",
+  "Most likely to flirt their way out of getting caught cheating?",
+  "Who would be the first to agree to a holiday with someone they met yesterday?",
+  "Who is most likely to have a secret crush on a friend's ex?",
+  "Most likely to get caught kissing someone at their own wedding?",
+  "Who would be willing to go on a date with their biggest enemy just for free food?",
+  "Who is most likely to have accidentally walked in on someone having sex?",
+  "Most likely to have a secret list of people they want to hook up with?",
+  "Who would be the first to confess their feelings after just one drink?",
+  "Who is most likely to have a fake relationship just to make their ex jealous?",
+  "Most likely to get caught flirting with someone while their partner is standing right beside them?",
+  "Who would be the first person to say 'I'm not that kind of person' and then prove exactly the opposite?",  "Who would sneak into a wedding they weren't invited to and eat three plates of biryani?",
+  "Most likely to tell their parents it's a \"group study\" and be at a bar?",
+  "Who would get caught doing something shameless and still have the confidence to blame everyone else?",  "Most likely to write \"adventurous and fun-loving\" on a matrimony site and be neither?",
+  "Who would get caught on a video call with their partner and say \"she's just my study partner\"?",
+  "Who would get caught booking an OYO room and blame it on a booking mistake?",
+  "Who would have the guts to ask a girl for her number while their girlfriend is sitting next to them?",
+  "Who would kill the same grandmother a third time to get a day off?",
+  "Who is most likely to have a condom in their wallet but no money for dinner?",
+  "Who would agree to marry someone just because their family owns a bar?",
+  "Who would send \"Good Morning 🌞\" to their crush for six months with zero replies?",
+  "Who would dance in the middle of the road at a wedding procession and lose a shoe?",
+  "Most likely to ask a stranger at the bar, \"Bro, do you have a sister?\"",
+  "Who would flirt in broken Hindi with a stranger and get slapped for one wrong word?",
+  "Who would say \"I'll pay next time\" for five straight years?",
+  "Who would change their WhatsApp DP five times after a breakup?",
+  "Most likely to save their ex's number as \"Do Not Pick\"?",
+  "Who would use \"mom is calling\" to escape a bad date?",
+  "Who would drink one beer and start posting life lessons on Instagram?",
+  "Who would check the bride's or groom's Instagram followers before agreeing to marry?",
+  "Who would cry for a week because their crush replied \"ok\"?",
+  "Who would get caught watching adult content on the hostel Wi-Fi?",
+  "Who would stand first in the queue at the wine shop on the first of the month?",
+  "Who would sneak out at midnight and come back through the window because dad is still awake?",
+  "Most likely to save their girlfriend or boyfriend as \"Bank Manager\" on caller ID?",
+  "Who would panic when a neighbourhood auntie posts their bar photo in the family group?",
+  "Who would fake a headache when the family group starts asking about marriage?",
+  "Who would borrow money \"for a medical emergency\" and buy sneakers?",
+  "Who would send \"reached home\" while still in a club?",
+  "Who would say \"I'm vegetarian\" in front of the parents and order chicken 65 the second they leave?",
+  "Who would screenshot dating app chats and send them to the group for roasting?",
+  "Who would date a friend's cousin and hide it for two years?",
+  "Who would say \"I'm in a meeting\" while sitting in a cinema hall?",
+  "Who would get caught \"studying\" with their partner on the terrace?",
+  "Who would say \"only mocktail\" and finish the whole table's bottle?",
+  "If we all got arrested after a late-night party, who would call their dad first?",
+  "If we all got stuck in a lift at a wedding hall, who would start gossiping about the bride?",
+  "If we all joined a matrimony site, whose profile would have the most lies?",
+  "If our WhatsApp chats leaked, who would be the most embarrassed?",
+  "If our parents saw our search history, who would be disowned first?",
+  "If we were all on Bigg Boss, who would be thrown out first for a fight?",
+  "If we were all locked in a hostel for one night, who would sneak out first?",
+  "If we opened a bar together, who would drink all the profit?",
+  "If we found a worm in the hostel sambar, who would still finish the plate?",
+  "Who would borrow a bike for a date and return it with no petrol?",
+  "Who would pretend to be a \"software engineer\" just to get a better marriage proposal?",
+  "Who would claim to know the bartender and still pay double?",
+  "Who would pretend to understand wine and say \"it has a nice body\"?",
+  "Who would flirt with a married colleague just for free lunch?",
+  "Who would have the most numbers saved without a name, for a reason?",
+  "Who would steal a friend's boyfriend or girlfriend and call it \"destiny\"?",
+  "Who would date a friend's ex and say \"bro, it's different\"?",
+  "Who would get dumped by text and reply with a paragraph?",
+  "Who would say \"I'm tired\" in the middle of a fight to end the call?",
+  "Who would find a partner by liking 400 photos at 2 AM?",
+  "Who would like their ex's 2018 photo at 2 AM and block them in panic?",
+  "Who would claim to be \"emotionally unavailable\" just to avoid a date?",
+  "Who would take a \"break\" from the relationship and be on a dating app by evening?",
+  "Who would say \"we are just friends\" while sharing a hotel room?",
+  "Who would sneak a date into the hostel dressed as a delivery guy?",
+  "Who would drunk-text \"I miss you\" to the wrong auntie?",
+  "Who would fall for the gym trainer and buy a two-year membership?",
+  "Who would spend their EMI money on a date and call it \"investment\"?",
+  "Who would tell the family it's a \"friend's engagement\" and go on a beach trip?",
+  "Who would fall asleep at their own bachelor party?",
+  "Who would walk in on two friends and say \"carry on\"?",
+  "Who would write a love letter to the wrong person in college?",
+  "Who would marry someone just because the horoscope matched?",
+  "Who would cry the loudest at a friend's wedding because the bride was their ex?",
+  "Who would get thrown out of a wedding for dancing with the band?",
+  "Who would lie about their age on a dating app by five years?",
+  "Who would use a friend's photo as their dating profile?",
+  "Who would post the one selfie with a filter that looks nothing like them?",
+  "Who would say \"I'll call you back\" and never do?",
+  "Who would sell their old phone to buy a gift for a date?",
+  "Who would eat at a roadside stall to impress a date and spend the night in the toilet?",
+  "Who would stay in a relationship because the partner pays all the bills?",
+  "Who would ride 40 km on a bike to see their crush for ten seconds?",
+  "Who would wait outside a college for an hour and be chased by the security guard?",
+  "Who would think a smile from a stranger on a bus means true love?",
+  "Who would tell a date \"I'm very rich\" with a bus ticket in their pocket?",
+  "Who would hide snacks in a jacket pocket at the cinema in front of a date?",
+  "Who would borrow a friend's shirt for a date and spill curry on it?",
+  "Who would bring up a fight from five years ago in the middle of dinner?",
+  "Who would send \"hi\" to ten exes after a drink?",
+  "Who would say \"I'm at the metro\" while still in bed?",
+  "Who would unfollow their ex and then watch all their stories from a fake account?",
+  "Who would keep every relationship secret until the wedding invite?",
+  "Who would say \"all men are the same\" or \"all women are the same\" and date the same type again?",
+  "Who would panic when their crush says \"we need to talk\"?",
+  "Who would be the loudest during \"private time\" and wake up the whole building?",
+  "Who would be the first to take off their shirt at a party for no reason?",
+  "Who would get a love bite and say \"mosquito\"?",
+  "Who would start \"friends with benefits\" first and catch feelings first?",
+  "Who would carry protection in their wallet since college and never use it?",
+  "Who would say \"I'm good in bed\" and fall asleep before anything happens?",
+  "Who would flirt with the cab driver for a discount?",
+  "Who would check their partner's phone and cry over what they didn't find?",
+  "Most likely to fart and blame it on someone else?",
+  "Who would most likely forget their own wedding anniversary?",
+  "Most likely to use a fake name at a bar?",
+  "Who would most likely eat someone else’s leftovers from the fridge?",
+  "Most likely to accidentally forward a private email to the whole office?",
+  "Most likely to burn down their house for the insurance money?",
+  "Most likely to follow through on a revenge plot?",
+  "If we were all in prison, who would rise to become the prison gang leader?",
+  "Who would most likely be friends with Hitler?",
+  "Most likely to get away with a white-collar crime?",
+  "Who has the best chance of cheating on a lie detector test?",
+  "Most likely to RSVP 'yes' to a party but never show up?",
+  "Most likely to get caught catfishing someone online?",
+  "Most likely to lie on their resume?",
+  "Who would be the most successful serial killer?",
+  "Most likely to become a liability after two drinks?",
+  "Who would give the most unhinged dating advice?",
+  "Most likely to sneak into an event without a ticket?",
+  "Most likely to spread a rumour they know is completely false?",
+  "Who would most likely steal someone else's parking spot?",
+  "Most likely to start a fight over a parking space?",
+  "Who would accidentally leak sensitive information?",
+  "Most likely to shoplift from a store?",
+  "Most likely to forget someone's name immediately after meeting them?",
+  "Most likely to use their kids to get out of plans?",
+  "Most likely to fall for a pyramid scheme?",
+  "Most likely to lie to someone just to get what they want?",
+  "Most likely to create a scam business?",
+  "Most likely to cheat while playing a board game?",
+  "Who would most likely get banned from a public place?",
+  "Who was the last person to get drunk or high at work?",
+  "Who has secretly done something very illegal and gotten away with it?",
+  "If I decided to rob a bank, who would be the last person I'd choose to help me?",
+  "Most likely to eat food straight off the floor?",
+  "Most likely to campaign for building a wall between Mexico and the US?",
+  "Most likely to commit a hit-and-run?",
+  "Most likely to say, 'I'm not racist, but...'?",
+  "Most likely to post a passive-aggressive status on social media?",
+  "Who is the worst person to trust with a secret?",
+  "Most likely to murder their spouse for insurance money and get away with it?",
+  "Most likely to support polygamy?",
+  "Most likely to tip less than 10% at a restaurant?",
+  "Who has gone the longest without taking a shower?",
+  "Who would be the worst person to get stuck with on a deserted island?",
+  "Most likely to ask a woman if she's pregnant when she isn't?",
+  "Most likely to get kicked out of a wedding?",
+  "Who would most likely have a secret second family?",
+  "Least likely to give up their bus seat for an elderly person?",
+  "Most likely to become a crazy conspiracy theorist?",
+  "Most likely to have a midlife crisis?",
+  "Most likely to give a drunk, absolutely disastrous speech at a wedding?",
+  "Who would most likely lose a child at the shopping mall?",
+  "Most likely to fake their own death?",
+  "Most likely to talk their way out of a speeding ticket?",
+  "Who would I trust the least to look after a newborn baby?",
+  "If I were on Who Wants to Be a Millionaire, who would be the last person I'd call as a lifeline?",
+  "Most likely to forget to pick up their kids from school?",
+  "Most likely to turn up drunk before the party even starts?",
+  "Most likely to get a tattoo they will regret for the rest of their life?",
+  "Who would most likely get caught snooping through someone else's phone?",
+  "Who takes the most sick days off without actually being sick?",
+  "Who would most likely get arrested for something absolutely ridiculous?",
+  "Who would most likely become famous for something embarrassing?",
+  "Who is most likely to ghost someone after just one date?",
+  "Who would be the worst person to get trapped in an elevator with?",
+  "Most likely to send a risky text to the wrong person?",
+  "Most likely to become a reality TV star?"
+]
+};
+// each room starts at a random spot and jumps by 7919 (coprime with the list size), so no question repeats until the whole list is used
+const QN=1000000,STEP=7919;
+const qAt=(mode,start,n)=>{const L=Q[mode];return L[(start+n*STEP)%L.length]};
+
+// ---------- helpers ----------
+const $=s=>document.querySelector(s), app=$("#app");
+const CH="ABCDEFGHJKLMNPQRSTUVWXYZ23456789", EMS=Array.from("😀😎🤪😈🥳🤠👻🦄🐸🐵🍕🔥💀🤡🦖🐙");
+let db=null,code="",room=undefined,players=[],votes=[],me={id:"",name:"",emoji:"😎"},screen="home",msg="",unsubs=[],joinedOk=false;
+try{me.id=sessionStorage.getItem("pid")||""}catch(e){}
+if(!me.id){me.id=Math.random().toString(36).slice(2,10);try{sessionStorage.setItem("pid",me.id)}catch(e){}}
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const P=id=>players.find(p=>p.id===id)||{name:"?",emoji:"❔",id};
+const rd=()=>db.doc("rooms/"+code), pc=()=>db.collection("rooms/"+code+"/p"), vc=()=>db.collection("rooms/"+code+"/v");
+const hdr=()=>`<div class="top"><span class="logo">WHO WOULD?!</span>${code?`<span class="pill">${code}</span>`:""}</div>`;
+const err=()=>msg?`<div class="err">${esc(msg)}</div>`:"";
+const go=s=>{screen=s;render()};
+const fail=e=>{msg=(e&&e.message)||"Something went wrong. Check your connection / permissions.";render()};
+
+// ---------- room logic ----------
+async function createRoom(mode){
+  for(let i=0;i<5;i++){
+    code=Array.from({length:5},()=>CH[Math.random()*CH.length|0]).join("");
+    const s=await rd().get(); if(!s.exists) break;
+  }
+  await rd().set({mode,host:me.id,phase:"lobby",asker:"",q:"",n:0,round:0,start:Math.random()*QN|0});
+  go("profile");
+}
+async function joinRoom(c){
+  code=c.trim().toUpperCase();
+  const s=await rd().get();
+  if(!s.exists){msg="No room with that ID. Check and try again.";code="";return render()}
+  msg="";go("profile");
+}
+async function enter(){
+  if(!me.name.trim()){msg="Type your name first!";return render()}
+  const prof={id:me.id,name:me.name.trim().slice(0,14),emoji:me.emoji,t:Date.now()};
+  if(db.join){db.join(code,me.id);db.rejoin=()=>pc().doc(me.id).set(prof)}
+  await pc().doc(me.id).set(prof);
+  listen(); go("game");
+}
+function listen(){
+  room=undefined;
+  unsubs.forEach(u=>u());unsubs=[];
+  unsubs.push(rd().onSnapshot(s=>{room=s.exists?s.data():null;render()},fail));
+  unsubs.push(pc().onSnapshot(s=>{players=s.docs.map(d=>d.data()).sort((a,b)=>a.t-b.t);render()},fail));
+  unsubs.push(vc().onSnapshot(s=>{votes=s.docs.map(d=>d.data());render()},fail));
+}
+const nextQ=(n)=>qAt(room.mode,room.start,n);
+async function startGame(){await rd().update({phase:"vote",asker:room.host,n:1,round:1,q:nextQ(0)})}
+async function vote(to){await vc().doc(me.id).set({id:me.id,to,round:room.round})}
+let revealedRound=0;function revealMine(){revealedRound=room.round;render()}
+async function passTo(id){await rd().update({asker:id,phase:"vote",q:nextQ(room.n),n:room.n+1,round:room.round+1})}
+
+// ---------- views ----------
+function render(){
+  if(!db){app.innerHTML=hdr()+`<div class="panel"><h2>Loading…</h2><p class="sm">If this never finishes, open the link while signed in to Claude with Contributor access.</p></div>`;return}
+  let h=hdr();
+  if(screen==="home") h+=`<div class="panel"><div class="big0">🃏</div><h1>Expose your friends!</h1><p>Who would…? Let the pointing begin.</p>${err()}<button onclick="go('mode')">➕ Create new game</button><button class="alt" onclick="go('join')">🔑 Join game</button></div>`;
+  else if(screen==="mode") h+=`<div class="panel"><h2>Who's playing?</h2>${err()}<button class="go" onclick="createRoom('family').catch(fail)">👨‍👩‍👧 Play with family</button><button onclick="createRoom('friends').catch(fail)">🍻 Play with friends (18+)</button><button class="alt" onclick="go('home')">← Back</button></div>`;
+  else if(screen==="join") h+=`<div class="panel"><h2>Enter room ID</h2><input id="cin" class="code" maxlength="5" placeholder="•••••" autocomplete="off">${err()}<button class="go" onclick="joinRoom($('#cin').value).catch(fail)">Enter room</button><button class="alt" onclick="go('home')">← Back</button></div>`;
+  else if(screen==="profile") h+=`<div class="panel"><h2>Who are you?</h2><input id="nm" maxlength="14" placeholder="Your name" value="${esc(me.name)}" oninput="me.name=this.value"><p class="sm">Pick your emoji</p><div class="grid">${EMS.map(e=>`<button class="em ${e===me.emoji?"sel":""}" onclick="me.emoji='${e}';render()">${e}</button>`).join("")}</div>${err()}<button class="go" onclick="enter().catch(fail)">Join the room</button></div>`;
+  else h+=game();
+  const f=document.activeElement&&document.activeElement.id, v=f&&document.activeElement.value;
+  app.innerHTML=h; if(f&&$("#"+f)){$("#"+f).value=v;$("#"+f).focus()}
+}
+function game(){
+  if(room===undefined) return `<div class="panel"><h2 class="center">Joining…</h2></div>`;
+  if(!room) return `<div class="panel"><h2>Room closed</h2><button onclick="location.reload()">Home</button></div>`;
+  const host=room.host===me.id, asker=room.asker===me.id, tag=room.mode==="family"?"👨‍👩‍👧 FAMILY":"🍻 FRIENDS 18+";
+  const roster=players.map(p=>`<div class="row"><span class="big">${p.emoji}</span><b>${esc(p.name)}</b>${p.id===room.host?'<span class="badge">HOST</span>':""}</div>`).join("");
+  if(room.phase==="lobby") return `<div class="panel"><span class="tag">${tag}</span><h2>Room ${code}</h2><p>Friends join with this ID. Anyone can hop in – no limit.</p>${roster}<p class="sm center">${players.length} player${players.length==1?"":"s"} in</p>${host?`<button class="go" ${players.length<2?"disabled":""} onclick="startGame().catch(fail)">▶ Start game</button>`:`<p class="center">Waiting for the host to start…</p>`}</div>`;
+  const cur=votes.filter(v=>v.round===room.round), mine=cur.find(v=>v.id===me.id), ak=P(room.asker);
+  const qbox=`<span class="tag">${tag} · Q${room.n}</span><div class="q">${esc(room.q)}</div>`;
+  const shown=revealedRound===room.round&&mine;
+  const pick=(fn)=>`<div class="opts">${players.filter(p=>fn==="vote"||p.id!==me.id).map(p=>`<button class="opt alt" onclick="${fn}('${p.id}').catch(fail)"><span>${p.emoji}</span><i class="nm">${esc(p.name)}</i></button>`).join("")}</div>`;
+  let body;
+  if(!mine) body=`<p>${asker?"You're reading it out loud 🎤":ak.emoji+" "+esc(ak.name)+" is reading it out."} Pick one:</p>${pick("vote")}`;
+  else if(!shown) body=`<div class="big0">🔒</div><h2 class="center">Locked in!</h2><p class="center">Face down your phone. ${cur.length}/${players.length} voted.</p><button class="go" onclick="revealMine()">👀 Reveal</button>`;
+  else{const t=P(mine.to);body=`<p class="center">Your pick:</p><div class="pick"><span>${t.emoji}</span><b>${esc(t.name)}</b></div>${asker?`<p>Pass the question to:</p>${pick("passTo")}`:`<p class="sm center">Waiting for ${esc(ak.name)} to pass the question…</p>`}`}
+  return `<div class="panel">${qbox}${body}</div>`;
+}
+
+// ---------- local test mode (no Claude): syncs between tabs of the same browser ----------
+function localDb(){
+ const L=new Set(),ping=()=>L.forEach(f=>f());addEventListener("storage",ping);
+ const rdp=p=>{try{return JSON.parse(localStorage.getItem("ld:"+p))}catch(e){return null}};
+ const snap=p=>{const d=rdp(p);return{exists:!!d,data:()=>d||undefined}};
+ const doc=p=>({get:async()=>snap(p),set:async d=>{localStorage.setItem("ld:"+p,JSON.stringify(d));ping()},update:async d=>{localStorage.setItem("ld:"+p,JSON.stringify({...rdp(p),...d}));ping()},onSnapshot:n=>{const f=()=>n(snap(p));L.add(f);setTimeout(f);return()=>L.delete(f)}});
+ const col=p=>({doc:id=>doc(p+"/"+id),onSnapshot:n=>{const f=()=>n({docs:Object.keys(localStorage).filter(k=>k.startsWith("ld:"+p+"/")&&k.slice(p.length+4).indexOf("/")<0).map(k=>({data:()=>JSON.parse(localStorage.getItem(k))}))});L.add(f);setTimeout(f);return()=>L.delete(f)}});
+ return{doc,collection:col};
+}
+// ---------- online mode: talks to server.js over WebSocket ----------
+function netDb(){
+ const url=(location.protocol==="https:"?"wss://":"ws://")+location.host;
+ let ws,q=[],n=0,first=true,who=null;const cb={},subs={};
+ const send=o=>{const m=JSON.stringify(o);ws.readyState===1?ws.send(m):q.push(m)};
+ const open=()=>{ws=new WebSocket(url);
+  ws.onopen=()=>{if(who)ws.send(JSON.stringify({op:"join",code:who.c,id:who.i}));Object.entries(subs).forEach(([id,s])=>ws.send(JSON.stringify({op:"sub",id,...s})));q.splice(0).forEach(m=>ws.send(m));if(!first&&api.rejoin)api.rejoin();first=false};
+  ws.onmessage=e=>{const x=JSON.parse(e.data),f=cb[x.sub||x.id];if(!f)return;const s=x.snap;
+   f(s.docs?{docs:s.docs.map(d=>({data:()=>d.data}))}:{exists:s.exists,data:()=>s.data})};
+  ws.onclose=()=>setTimeout(open,1000)};
+ open();
+ const doc=p=>({get:()=>new Promise(r=>{const id="g"+ ++n;cb[id]=s=>{delete cb[id];r(s)};send({op:"get",id,path:p})}),
+  set:async d=>send({op:"set",path:p,data:d}),update:async d=>send({op:"update",path:p,data:d}),
+  onSnapshot:f=>{const id="s"+ ++n;cb[id]=f;subs[id]={path:p,kind:"doc"};if(ws.readyState===1)ws.send(JSON.stringify({op:"sub",id,...subs[id]}));return()=>{delete cb[id];delete subs[id]}}});
+ const col=p=>({doc:i=>doc(p+"/"+i),onSnapshot:f=>{const id="s"+ ++n;cb[id]=f;subs[id]={path:p,kind:"col"};if(ws.readyState===1)ws.send(JSON.stringify({op:"sub",id,...subs[id]}));return()=>{delete cb[id];delete subs[id]}}});
+ const api={doc,collection:col,join:(c,i)=>{who={c,i};send({op:"join",code:c,id:i})}};
+ return api;
+}
+// ---------- boot ----------
+render();
+(async()=>{
+  try{const c=(typeof claude==="undefined")?(location.protocol==="file:"?localDb():netDb()):await claude.use("db");if(!c){app.innerHTML=hdr()+`<div class="panel"><h2>Sign in needed</h2><p>Open this link signed in to Claude, with Contributor access, so everyone's phones can share the room.</p></div>`;return}db=c}catch(e){return}
+  render();
+})();
+</script>
+</body>
+</html>
